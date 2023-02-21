@@ -18,3 +18,6 @@ To mutation-candidates.py, pass one argument: the name of python source file you
 To mutator.py, pass one argument: the name of the .mut file. Edit the resuting .mutdb file if desired.
 
 To mutation.py, pass three arguments: the .mut file, the .mutdb file, and the name of the source file.
+
+# To Do
+Finish implementing list subscript mutations in mutation.py

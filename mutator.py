@@ -9,6 +9,7 @@ assignment = {"=","+=","-=","*=","/=","%=","//=","**="}
 comparison = {"==", "!=", ">", "<", ">=", "<=", "is", "is not"}
 logical    = {"and", "or"}
 unary      = {"+", "-", "not"}
+subscript  = {"[]", "[+1]", "[-1]", "[*2]", "[//2]"}
 
 # what are each of these operator classes called in the file itself?
 fileSyntax2Symbols = {
@@ -16,6 +17,7 @@ fileSyntax2Symbols = {
     "AssignmentOperator" : assignment,
     "ComparisonOperator" : comparison,
     "LogicalOperator"    : logical,
+    "ListSubscript"     : subscript
 }
 
 # parse CLI args, setup files

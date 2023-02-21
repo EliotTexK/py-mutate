@@ -47,11 +47,20 @@ logical = {
     "or"     : ast.Or()
 }
 
+listSubscript = {
+    "[]"     : ast.List(),
+    "[+1]"   : ast.List(),
+    "[-1]"   : ast.List(),
+    "[*2]"   : ast.List(),
+    "[//2]"  : ast.List()
+}
+
 fileSyntax2Ops = {
     "ArithmeticOperator" : arithmetic,
     "AssignmentOperator" : assignment,
     "ComparisonOperator" : comparison,
     "LogicalOperator"    : logical,
+    "ListSubscript"      : listSubscript
 }
 
 # parse CLI args:
@@ -92,14 +101,14 @@ for node in nodes:
             nodeDict[key] = node
 
 # for each line in the .mutdb file
-# use the dict to find the corresponding node
+# use nodeDict to find the corresponding node
 # temporarily replace the node with the mutant
 # use astor to write the mutated source file
 # return the node to its previous state
 for dbline in mutDBFile.readlines():
     data = dbline.split(" ")
     key  = ((int(data[0]), int(data[1]), int(data[2]), int(data[3])))
-    if key in validKeys:
+    if key in validKeys and key in nodeDict.keys():
         node = nodeDict[key]
         temp = copy.deepcopy(node)
 

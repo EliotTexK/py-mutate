@@ -33,6 +33,9 @@ opText = {
 class CustomNodeVisitor(ast.NodeVisitor):
     currentFunction = ""    # name of current function is used in output
     nestedLevel = 0         # ignore functions not in module scope
+    # We want to only mutate the subscripts for lists and tuples.
+    # So, we need to track identifiers for such objects.
+    validSubscriptable = set()
     
     # begin output line with source line number, column number,
     # and module-scope function name (if it exists)
@@ -62,11 +65,14 @@ class CustomNodeVisitor(ast.NodeVisitor):
         if self.nestedLevel == 0:
             self.currentFunction = ""
     
+    def visit_List(self, node):
+        self.generic_visit(node)
+    
     def visit_BinOp(self, node):
         line = self.beginLine(node)
         # specify type of operation
         line += "ArithmeticOperator "   
-        # add the operation in question
+        # add a symbol to designate it
         line += opText[type(node.op)]
         mutFile.write(line)
         mutFile.write("\n")
@@ -76,7 +82,7 @@ class CustomNodeVisitor(ast.NodeVisitor):
         line = self.beginLine(node)
         # specify type of operation
         line += "AssignmentOperator "  
-        # add the operation in question
+        # add a symbol to designate it
         line += opText[type(node.op)] + "="
         mutFile.write(line)
         mutFile.write("\n")
@@ -93,7 +99,7 @@ class CustomNodeVisitor(ast.NodeVisitor):
         else:
             # specify type of operation
             line += "ComparisonOperator "
-            # add the operation in question
+            # add a symbol to designate it
             line += opText[type(node.ops[0])]
             mutFile.write(line)
             mutFile.write("\n")
@@ -103,27 +109,35 @@ class CustomNodeVisitor(ast.NodeVisitor):
         line = self.beginLine(node)
         # specify type of operation
         line += "LogicalOperator "
-        # add the operation in question
+        # add a symbol to designate it
         line += opText[type(node.op)]
         mutFile.write(line)
         mutFile.write("\n")
         self.generic_visit(node)
+    
+    def visit_Subscript(self, node):
+        line = self.beginLine(node)
+        # specify subscript
+        line += "ListSubscript "
+        # add a symbol to designate it
+        line += "[]"
+        mutFile.write(line)
+        mutFile.write("\n")
+        self.generic_visit(node)
+
 
 # find output filenames
 withExtension = sys.argv[1].split(".")
 if len(withExtension) != 2:
-    raise Exception("file extension should be .py")
+    print("file extension should be .py",file=sys.stderr)
 
 noFileExtension = withExtension[0]
 
 # record mutation candidates in this file:
-mutFile = open(noFileExtension + ".mut",   "w")
+with open(noFileExtension + ".mut",   "w") as mutFile:
+    mutFile.write(sys.argv[1] + "\n")
+    sourceFile = ast.parse(open(sys.argv[1]).read())
 
-mutFile.write(sys.argv[1] + "\n")
-sourceFile = ast.parse(open(sys.argv[1]).read())
-
-# recursively visit nodes in the AST
-visitor = CustomNodeVisitor()
-visitor.visit(sourceFile)
-
-mutFile.close()
+    # recursively visit nodes in the AST
+    visitor = CustomNodeVisitor()
+    visitor.visit(sourceFile)
